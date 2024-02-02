@@ -1,0 +1,99 @@
+library(tidyverse)
+library(lubridate)
+
+df <- read.csv("Eartquakes-1990-2023.csv")
+
+df$date <- as.Date(df$date, format = '%Y-%m-%d')
+
+
+
+
+df_filtered <- df %>% 
+  filter(year(date) >= 2022 & year(date) <= 2023) %>%
+  select(date, magnitudo)
+# Export the filtered dataframe to CSV
+write.csv(df_filtered, "filtered_earthquake_data.csv", row.names = FALSE)
+
+
+ggplot(df_filtered, aes(x = date, y = magnitudo)) +
+  geom_point(alpha = 0.5, color = "lightblue") +
+  theme_minimal() +
+  labs(title = "Magnitudo trend by year (2020-2022)", x = "Date", y = "Magnitudo") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(df_filtered, aes(x = magnitudo)) +
+  geom_histogram(binwidth = (max(df$magnitudo) - min(df$magnitudo)) / 250, fill = "lightblue", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Magnitudo bimodal distribution 2022-2023", x = "Magnitudo", y = "Count") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+library(ggplot2)
+
+# Creating the dataframe
+earthquake_data <- data.frame(
+  earthquake_name = c("2004 Sumatra - Andaman Islands", "2011 Great Tohoku, Japan", "36 km WNW of Quirihue, Chilie", "78 km WSW of Singkil, Indonesia", "off the west cost of northern Sumatra", "6KM SSW of Atico, Peru", "122 km SW of Bengkulu, Indonesia", "Kuril Islands 48 km E of Shikotan, Russia", "Sea of Okhotsk", "48 km W of Illapel, Chile", "267 km E of Levuka, Fiji", "55 km NNW of Reyes, Bolivia", "93 km NW of Iquique, Chile", "near the coast of Chiapas, Mexico", "off the west coast of northern Sumatra", "Alaska Peninsula", "134 km SSW of Kushiro,Japan"),
+  magnitude = c(9.1, 9.1, 8.8, 8.6, 8.6, 8.4, 8.4, 8.3, 8.3, 8.3, 8.2, 8.2, 8.2, 8.2, 8.2, 8.2, 8.16)
+)
+
+# Plotting the data using ggplot2
+ggplot(data = earthquake_data, aes(x = reorder(earthquake_name, magnitude), y = magnitude)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(aes(label = magnitude), position = position_dodge(width = 0.9), vjust = 0.25) +
+  coord_flip() +
+  labs(title = "Strongest earthquakes from 1990-2023", x = "Earthquake", y = "Magnitude") +
+  theme_minimal()
+
+library(dplyr)
+top_states <- df %>%
+  group_by(state) %>%
+  summarize(count = n()) %>%
+  arrange(-count) %>%
+  head(10)
+top_states$state[top_states$state == " California"] <- "California"
+
+ggplot(top_states, aes(x = reorder(state, count), y = count)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  geom_text(aes(label = count), position = position_dodge(width = 0.9), vjust = 0.25) +
+  coord_flip() +
+  labs(title = "Top 10 States with the Most Earthquakes 1990-2023", x = "State", y = "Number of Earthquakes") +
+  theme_minimal()
+
+df_f2 <- df %>% 
+  select(date, magnitudo)
+
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+
+# Extracting year, grouping by year and magnitude, and counting
+yearly_counts <- df_f2 %>%
+  mutate(year = year(date)) %>%
+  group_by(year, magnitudo) %>%
+  tally()
+
+# Plotting the data
+ggplot(yearly_counts, aes(x = year, y = n, group = magnitudo, color = magnitudo)) +
+  geom_line() +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title = "Count of Earthquakes by Magnitude Per Year", x = "Year", y = "Count") +
+  theme_minimal()
+
+library(ggplot2)
+
+# Data
+countries <- c("Indonesia", "Japan", "Chile", "Papua New Guinea", "New Zealand", 
+               "The Philippines", "Mexico", "Peru", "China", "Tajikistan")
+earthquakes <- c(1509, 1148, 1031, 939, 676, 553, 532, 506, 490, 455)
+strongest <- c(6.6, 7.0, 7.6, 7.9, 7.8, 6.3, 6.6, 6.2, 6.6, 6.6)
+
+df2 <- data.frame(countries, earthquakes, strongest)
+
+# Plot
+ggplot(df2, aes(x = reorder(countries, earthquakes), y = earthquakes)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = paste0("M ", strongest)), vjust = -0.5, color = "black") +
+  coord_flip() +
+  labs(title = "Top Countries by Number of Significant Earthquakes 2016\n Label: Stringest Magnitudo",
+       x = "Country",
+       y = "Number of Earthquakes") +
+  theme_minimal()
